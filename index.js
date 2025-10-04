@@ -35,7 +35,7 @@ client.riffy = new Riffy(client, nodes, {
         const guild = client.guilds.cache.get(payload.d.guild_id);
         if (guild) guild.shard.send(payload);
     },
-    defaultSearchPlatform: "ytmsearch",
+    defaultSearchPlatform: "ytsearch",
     restVersion: "v4"
 });
 
