@@ -1,23 +1,35 @@
-const { EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
+    // Para slash commands (/)
+    data: new SlashCommandBuilder()
+        .setName('queue')
+        .setDescription('Muestra la cola de canciones.'),
+    // Para prefix commands (?)
     name: 'queue',
-    description: 'Muestra la cola de canciones.',
     aliases: ['q'],
-    execute(message, args, client) {
-        const player = client.riffy.players.get(message.guild.id);
+
+    async execute(context, client) {
+        const isInteraction = context.isChatInputCommand ? context.isChatInputCommand() : false;
+        const guildId = context.guild.id;
+
+        const player = client.riffy.players.get(guildId);
         if (!player || player.queue.size === 0) {
-            return message.reply("La cola está vacía.");
+            const reply = "La cola está vacía.";
+            return isInteraction ? context.reply({ content: reply, ephemeral: true }) : context.reply(reply);
         }
 
-        const queue = player.queue.map((track, index) => `${index + 1}. [${track.info.title}](${track.info.uri}) - ${track.info.requester}`);
+        const queue = player.queue.map((track, index) => {
+            const requester = track.info.requester || "Desconocido";
+            return `${index + 1}. [${track.info.title}](${track.info.uri}) - Solicitado por: ${requester}`;
+        });
         
         const embed = new EmbedBuilder()
             .setColor("#2b71ec")
             .setTitle("📜 Cola de Reproducción")
             .setDescription(queue.slice(0, 10).join('\n')) // Muestra las primeras 10 canciones
-            .setFooter({ text: `Total de canciones: ${player.queue.size}` });
+            .setFooter({ text: `Total de canciones en la cola: ${player.queue.size}` });
 
-        message.channel.send({ embeds: [embed] });
+        return isInteraction ? context.reply({ embeds: [embed] }) : context.channel.send({ embeds: [embed] });
     },
 };
