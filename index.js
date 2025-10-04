@@ -1,13 +1,12 @@
-// freddyfn/osaker-v2/Osaker-V2-a42335b59dc7261e0102d104f4969c6f23f3643b/index.js
-
 require('dotenv').config();
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const { Riffy } = require("riffy");
 const express = require('express');
+const { prefix } = require('./config.js');
 
-// Servidor web para UptimeRobot
+// Servidor web para UptimeRobot y Render
 const app = express();
 const port = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('¡El bot está vivo!'));
@@ -40,10 +39,7 @@ client.riffy = new Riffy(client, nodes, {
     restVersion: "v4"
 });
 
-
-// --- ✅ INICIO DEL CÓDIGO FALTANTE ---
-
-// Cargador de Comandos
+// --- Cargador de Comandos ---
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(commandsPath);
@@ -62,11 +58,12 @@ for (const folder of commandFolders) {
     }
 }
 
-// Cargador de Eventos (Si decides usarlos en el futuro)
-// Por ahora, el manejo de mensajes está en messageCreate, pero esta es la estructura correcta.
+// --- Cargador de Eventos ---
 const eventsPath = path.join(__dirname, 'events');
+// Comprueba si la carpeta 'events' existe antes de intentar leerla
 if (fs.existsSync(eventsPath)) {
     const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
     for (const file of eventFiles) {
         const filePath = path.join(eventsPath, file);
         const event = require(filePath);
@@ -76,8 +73,33 @@ if (fs.existsSync(eventsPath)) {
             client.on(event.name, (...args) => event.execute(...args, client));
         }
     }
+} else {
+    console.log("[ADVERTENCIA] No se encontró la carpeta 'events'. Asegúrate de crearla si tienes eventos como 'ready.js'.")
 }
 
+
+// --- Escuchador de Mensajes ---
+client.on('messageCreate', async (message) => {
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+    if (!command) return;
+
+    try {
+        await command.execute(message, args, client);
+    } catch (error) {
+        console.error(`Error en el comando ${commandName}:`, error);
+        message.reply('❌ Ocurrió un error al intentar ejecutar ese comando.');
+    }
+});
+
+// --- Manejador RAW para el Audio de Lavalink ---
+client.on("raw", (d) => {
+    client.riffy.updateVoiceState(d);
+});
 
 // --- Iniciar sesión ---
 client.login(process.env.TOKEN);
