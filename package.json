@@ -5,5 +5,12 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "riffy": "^1.0.7"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
