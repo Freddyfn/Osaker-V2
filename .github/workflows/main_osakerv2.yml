@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
+          node-version: '20.x'
 
       - name: npm install, build, and test
         run: |
@@ -51,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FCBC45596B3A4E719D07C0AA7E179778 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4940BDD00B5745749A28CEFA0CE76231 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_383BD839E012400889A50C2F4B52BDA2 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DA96A66298CC4774AAAF94F662843077 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_80798E8E97EB452180E7FE36E4B4A33B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9C9B7C7A71CE4CECBF09D66264F1632A }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -62,6 +62,4 @@ jobs:
           app-name: 'osakerv2'
           slot-name: 'Production'
           package: .
-
           
-
