@@ -1,3 +1,5 @@
+// commands/music/play.js
+
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
@@ -45,7 +47,11 @@ module.exports = {
             
             let replyMessage = '';
 
-            if (loadType === 'playlist') {
+            // <<< CAMBIO: AÑADIDO MANEJO DE ERRORES DE LAVALINK >>>
+            if (loadType === 'error') {
+                console.error("Error de Lavalink al resolver la pista:", resolve.error);
+                replyMessage = '❌ Ocurrió un error al buscar la canción. El servicio de música podría estar temporalmente caído.';
+            } else if (loadType === 'playlist') {
                 for (const track of tracks) player.queue.add(track);
                 replyMessage = `🎶 **${tracks.length}** canciones de **${playlistInfo.name}** han sido añadidas a la cola.`;
                 if (!player.playing && !player.paused) player.play();
@@ -54,15 +60,16 @@ module.exports = {
                 player.queue.add(track);
                 replyMessage = `✅ **${track.info.title}** ha sido añadido a la cola.`;
                 if (!player.playing && !player.paused) player.play();
-            } else {
+            } else { // Esto cubre el caso 'empty'
                 replyMessage = '❌ No se encontraron resultados.';
             }
+            // --- FIN DEL CAMBIO ---
             
             return isInteraction ? context.editReply(replyMessage) : context.channel.send(replyMessage);
 
         } catch (error) {
             console.error("Error en el comando play:", error);
-            const errorReply = "❌ Ocurrió un error al intentar reproducir la canción.";
+            const errorReply = "❌ Ocurrió un error inesperado al intentar reproducir la canción.";
             return isInteraction ? context.editReply(errorReply) : context.reply(errorReply);
         }
     },

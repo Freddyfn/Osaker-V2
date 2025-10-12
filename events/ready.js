@@ -18,7 +18,7 @@ module.exports = {
             status: 'online',
         });
 
-        // Eventos de Riffy para saber qué está pasando con la música
+        // --- EVENTOS DE RIFFY MEJORADOS PARA DIAGNÓSTICO ---
         client.riffy.on("nodeConnect", node => {
             console.log(`🎵 Nodo de Lavalink "${node.name}" conectado.`);
         });
@@ -26,6 +26,17 @@ module.exports = {
         client.riffy.on("nodeError", (node, error) => {
             console.error(`❌ El nodo "${node.name}" encontró un error: ${error.message}`);
         });
+
+        // <<< CAMBIO: AÑADIDO PARA DETECTAR DESCONEXIONES >>>
+        client.riffy.on("nodeDisconnect", node => {
+            console.warn(`🔌 El nodo "${node.name}" se ha desconectado. Revisa el estado del servidor Lavalink.`);
+        });
+        
+        // <<< CAMBIO: AÑADIDO PARA VER INTENTOS DE RECONEXIÓN >>>
+        client.riffy.on("nodeReconnect", node => {
+            console.info(`🔄 Intentando reconectar al nodo "${node.name}".`);
+        });
+        // --- FIN DE LOS EVENTOS MEJORADOS ---
 
         client.riffy.on("trackStart", async (player, track) => {
             const channel = client.channels.cache.get(player.textChannel);
@@ -44,7 +55,7 @@ module.exports = {
                 if (player.queue.size === 0) {
                     player.destroy();
                 }
-            }, 120000); // 1 minuto
+            }, 120000); // 2 minutos
         });
     },
 };
