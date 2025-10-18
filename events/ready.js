@@ -50,12 +50,24 @@ module.exports = {
             if (channel) {
                 channel.send("✅ La cola ha terminado. ¡No hay más canciones para reproducir!");
             }
+
+            // <<< INICIO DEL CAMBIO: Guardar el temporizador de desconexión >>>
+
+            // Limpia cualquier temporizador anterior que pudiera existir por seguridad
+            if (player.disconnectTimeout) {
+                clearTimeout(player.disconnectTimeout);
+            }
+
             // Opcional: Desconectar el bot después de un tiempo de inactividad
-            setTimeout(() => {
+            player.disconnectTimeout = setTimeout(() => {
                 if (player.queue.size === 0) {
                     player.destroy();
                 }
+                // Limpia la referencia al temporizador una vez ejecutado
+                player.disconnectTimeout = null; 
             }, 120000); // 2 minutos
+            
+            // <<< FIN DEL CAMBIO >>>
         });
     },
 };

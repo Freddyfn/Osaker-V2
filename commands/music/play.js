@@ -47,23 +47,40 @@ module.exports = {
             
             let replyMessage = '';
 
-            // <<< CAMBIO: AÑADIDO MANEJO DE ERRORES DE LAVALINK >>>
             if (loadType === 'error') {
                 console.error("Error de Lavalink al resolver la pista:", resolve.error);
                 replyMessage = '❌ Ocurrió un error al buscar la canción. El servicio de música podría estar temporalmente caído.';
+            
             } else if (loadType === 'playlist') {
+                
+                // <<< INICIO DEL CAMBIO: Cancelar temporizador de inactividad >>>
+                if (player.disconnectTimeout) {
+                    clearTimeout(player.disconnectTimeout);
+                    player.disconnectTimeout = null;
+                }
+                // <<< FIN DEL CAMBIO >>>
+
                 for (const track of tracks) player.queue.add(track);
                 replyMessage = `🎶 **${tracks.length}** canciones de **${playlistInfo.name}** han sido añadidas a la cola.`;
                 if (!player.playing && !player.paused) player.play();
+
             } else if (loadType === 'search' || loadType === 'track') {
+                
+                // <<< INICIO DEL CAMBIO: Cancelar temporizador de inactividad >>>
+                if (player.disconnectTimeout) {
+                    clearTimeout(player.disconnectTimeout);
+                    player.disconnectTimeout = null;
+                }
+                // <<< FIN DEL CAMBIO >>>
+
                 const track = tracks.shift();
                 player.queue.add(track);
                 replyMessage = `✅ **${track.info.title}** ha sido añadido a la cola.`;
                 if (!player.playing && !player.paused) player.play();
+            
             } else { // Esto cubre el caso 'empty'
                 replyMessage = '❌ No se encontraron resultados.';
             }
-            // --- FIN DEL CAMBIO ---
             
             return isInteraction ? context.editReply(replyMessage) : context.channel.send(replyMessage);
 
