@@ -86,8 +86,23 @@ module.exports = {
 
         } catch (error) {
             console.error("Error en el comando play:", error);
-            const errorReply = "❌ Ocurrió un error inesperado al intentar reproducir la canción.";
-            return isInteraction ? context.editReply(errorReply) : context.reply(errorReply);
+
+            // <<< INICIO DE LA SOLUCIÓN: Reconexión de Lavalink >>>
+            try {
+                console.warn("Error en 'play', se detectó un posible problema con Lavalink. Intentando reconectar Riffy...");
+                // Forzamos a Riffy a reinicializar sus conexiones con los nodos
+                // Esto utiliza la configuración ya cargada en index.js
+                client.riffy.init(client.user.id); 
+                console.log("Intento de reconexión de Riffy enviado.");
+            } catch (reconError) {
+                console.error("Error crítico al intentar *reconectar* Riffy:", reconError);
+            }
+            // <<< FIN DE LA SOLUCIÓN >>>
+
+            // Mensaje modificado para el usuario
+            const errorReply = "❌ Ocurrió un error inesperado. Se está intentando reconectar el servicio de música. Por favor, intenta tu comando de nuevo en unos segundos.";
+            
+            return isInteraction ? (context.deferred ? context.editReply(errorReply) : context.reply({ content: errorReply, ephemeral: true })) : context.reply(errorReply);
         }
     },
 };
